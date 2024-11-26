@@ -1,24 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facebook Post to Page</title>
+  <meta charset="utf-8">
+  <title>SocialAuth</title>
+  <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
+  <style media="screen">
+    #fb-btn {
+      margin-top: 20px;
+    }
+
+    #profile,
+    #logout,
+    #feed {
+      display: none
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Publier un message sur une page Facebook</h1>
-  <button id="loginButton">Se connecter à Facebook</button>
-  <button id="postButton" style="display:none;">Publier sur la page</button>
-
   <script>
     window.fbAsyncInit = function () {
       FB.init({
-        appId: '536709629218569', // Remplacez par l'ID de votre application Facebook
+        appId: '536709629218569',
         cookie: true,
         xfbml: true,
-        version: 'v21.0',
+        version: 'v21.0'
       });
 
       FB.getLoginStatus(function (response) {
@@ -26,60 +33,126 @@
       });
     };
 
-    // Charger le SDK Facebook
     (function (d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s);
-      js.id = id;
+      if (d.getElementById(id)) { return; }
+      js = d.createElement(s); js.id = id;
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
-    })(document, 'script', 'facebook-jssdk');
+    }(document, 'script', 'facebook-jssdk'));
 
     function statusChangeCallback(response) {
       if (response.status === 'connected') {
-        console.log('Connecté à Facebook');
-        document.getElementById('postButton').style.display = 'block';
+        console.log('Logged in and authenticated');
+        setElements(true);
+        testAPI();
       } else {
-        console.log('Non connecté à Facebook');
-        document.getElementById('postButton').style.display = 'none';
+        console.log('Not authenticated');
+        setElements(false);
       }
     }
 
-    // Fonction pour publier un message
-    function publishPost() {
-      const pageId = '480923945106621'; // Remplacez par l'ID de votre page
-      const accessToken = 'EAAHoInLMDwkBO9tuHZBCWfpwL3zDFxFTPnzPR40V33jz48lumSO3K5Gw5tCqnrJE2mkkrWRUCfCt6wJEH6foS0ZCRvejnLobEFc0mNpSkgrVsrT8h8dLrHCiTneIJQAvtfE6yWkIJGilZCWx67RuKsSHM7pHerdlDcdkiYWgUNmYZAAZBIe2FZBrrepk6ak2xX3qVu9y8coBwEYZCNttAZDZD'; // Remplacez par votre jeton d'accès
-
-      FB.api(
-        `/${pageId}/feed`,
-        'POST',
-        {
-          message: 'Hello, voici un message publié depuis le SDK Facebook !',
-          access_token: accessToken,
-        },
-        function (response) {
-          if (response && !response.error) {
-            alert('Message publié avec succès !');
-          } else {
-            console.error('Erreur lors de la publication', response.error);
-          }
-        }
-      );
+    function checkLoginState() {
+      FB.getLoginStatus(function (response) {
+        statusChangeCallback(response);
+      });
     }
 
-    // Bouton de connexion
-    document.getElementById('loginButton').addEventListener('click', function () {
-      FB.login(function (response) {
-        statusChangeCallback(response);
-      }, { scope: 'pages_manage_posts,pages_read_engagement' });
-    });
+    function testAPI() {
+      FB.api('/me?fields=name,email', function (response) {
+        if (response && !response.error) {
+          //console.log(response);
+          buildProfile(response);
+        }
 
-    // Bouton de publication
-    document.getElementById('postButton').addEventListener('click', function () {
-      publishPost();
-    });
+        FB.api('/me/feed', function (response) {
+          if (response && !response.error) {
+            buildFeed(response);
+          }
+        });
+      })
+    }
+
+    function buildProfile(user) {
+      let profile = `
+          <ul class="list-group">
+            <li class="list-group-item">User ID: ${user.id}</li>
+            <li class="list-group-item">User ID: ${user.name}</li>
+            <li class="list-group-item">Email: ${user.email}</li>
+          </ul>
+        `;
+
+      document.getElementById('profile').innerHTML = profile;
+    }
+
+    function buildFeed(feed) {
+      let output = '<h3>Latest Posts</h3>';
+      for (let i in feed.data) {
+        if (feed.data[i].message) {
+          output += `
+              <div class="well">
+                ${feed.data[i].message} <span>${feed.data[i].created_time}</span>
+              </div>
+            `;
+        }
+      }
+
+      document.getElementById('feed').innerHTML = output;
+    }
+
+    function setElements(isLoggedIn) {
+      if (isLoggedIn) {
+        document.getElementById('logout').style.display = 'block';
+        document.getElementById('profile').style.display = 'block';
+        document.getElementById('feed').style.display = 'block';
+        document.getElementById('fb-btn').style.display = 'none';
+        document.getElementById('heading').style.display = 'none';
+      } else {
+        document.getElementById('logout').style.display = 'none';
+        document.getElementById('profile').style.display = 'none';
+        document.getElementById('feed').style.display = 'none';
+        document.getElementById('fb-btn').style.display = 'block';
+        document.getElementById('heading').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      FB.logout(function (response) {
+        setElements(false);
+      });
+    }
   </script>
+
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+          aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">SocialAuth</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Home</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a id="logout" href="#" onclick="logout()">Logout</a></li>
+          <fb:login-button id="fb-btn" scope="public_profile,email" onlogin="checkLoginState();">
+          </fb:login-button>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+  <div class="container">
+    <h3 id="heading">Log in to view your profile</h3>
+    <div id="profile"></div>
+    <div id="feed"></div>
+  </div>
 </body>
 
 </html>

@@ -2,78 +2,78 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Login Example</title>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Login Example</title>
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
 </head>
 
 <body>
-    <h1>Facebook Login</h1>
-    <button onclick="loginWithFacebook()">Connect with Facebook</button>
-    <div id="user-info" style="margin-top: 20px;"></div>
+  <h1>Facebook Login</h1>
+  <button onclick="loginWithFacebook()">Connect with Facebook</button>
+  <div id="user-info" style="margin-top: 20px;"></div>
 
-    <script>
+  <script>
 
-        (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) { return; }
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js"; // Charge le SDK à partir des serveurs Facebook
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
+    // Load the Facebook SDK
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '1388964938744601', // Replace with your Facebook App ID
+        cookie: true,         // Enable cookies
+        xfbml: true,          // Parse social plugins on this page
+        version: 'v21.0'      // Use the latest Graph API version
+      });
 
-        // Load the Facebook SDK
-        window.fbAsyncInit = function () {
-            FB.init({
-                appId: '1342513043761208', // Replace with your Facebook App ID
-                cookie: true,         // Enable cookies
-                xfbml: true,          // Parse social plugins on this page
-                version: 'v21.0'      // Use the latest Graph API version
-            });
+      FB.AppEvents.logPageView(); // Optional: Log events
+    };
 
-            FB.AppEvents.logPageView(); // Optional: Log events
-        };
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) { return; }
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js"; // Charge le SDK à partir des serveurs Facebook
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
 
-        // Function to log in with Facebook
-        function loginWithFacebook() {
-            FB.login(
-                function (response) {
-                    if (response.status === 'connected') {
-                        // Successfully logged in
-                        console.log('Logged in:', response);
-                        fetchUserInfo();
-                    } else {
-                        // User cancelled login or did not fully authorize
-                        console.log('User cancelled login or did not fully authorize.');
-                    }
-                },
-                { scope: 'public_profile,email' } // Request specific permissions
-            );
-        }
+    // Function to log in with Facebook
+    function loginWithFacebook() {
+      FB.login(
+        function (response) {
+          if (response.status === 'connected') {
+            // Successfully logged in
+            console.log('Logged in:', response);
+            fetchUserInfo();
+          } else {
+            // User cancelled login or did not fully authorize
+            console.log('User cancelled login or did not fully authorize.');
+          }
+        },
+        { scope: 'public_profile,email' } // Request specific permissions
+      );
+    }
 
-        // Fetch user info after login
-        function fetchUserInfo() {
-            FB.api('/me', { fields: 'id,name,email' }, function (response) {
-                console.log('User Info:', response);
-                displayUserInfo(response);
-            });
-        }
+    // Fetch user info after login
+    function fetchUserInfo() {
+      FB.api('/me', { fields: 'id,name,email' }, function (response) {
+        console.log('User Info:', response);
+        displayUserInfo(response);
+      });
+    }
 
-        // Display user info on the page
-        function displayUserInfo(user) {
-            const userInfoDiv = document.getElementById('user-info');
-            userInfoDiv.innerHTML = `
+    // Display user info on the page
+    function displayUserInfo(user) {
+      const userInfoDiv = document.getElementById('user-info');
+      userInfoDiv.innerHTML = `
         <h2>User Information</h2>
         <p><strong>Name:</strong> ${user.name}</p>
         <p><strong>Email:</strong> ${user.email || 'No email permission granted'}</p>
       `;
-        }
-    </script>
+    }
+  </script>
 
 
-    <div class="fb-like" data-share="true" data-width="450" data-show-faces="true">
-    </div>
+  <div class="fb-like" data-share="true" data-width="450" data-show-faces="true">
+  </div>
 </body>
 
 </html>
